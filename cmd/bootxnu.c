@@ -139,6 +139,30 @@ int do_bootxnu(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 	if (command_line)
 		strlcpy(boot_args->command_line, command_line, XNU_CMDLINE_LEN);
 
+	struct udevice *vid_device = NULL;
+	struct video_priv *vid_priv = NULL;
+	int ret = uclass_first_device_err(UCLASS_VIDEO, &vid_device);
+	if (ret == 0) {
+		vid_priv = dev_get_uclass_priv(vid_device);
+	}
+
+	if (vid_priv) {
+		boot_args->video_information.base_addr = vid_priv->fb;
+		boot_args->video_information.display = 0;
+		boot_args->video_information.bytes_per_row = (vid_priv->fb_size) / vid_priv->ysize;
+		boot_args->video_information.width = vid_priv->xsize;
+		boot_args->video_information.height = vid_priv->ysize;
+		boot_args->video_information.depth = (1 << vid_priv->bpix);
+
+		printf("## Using framebuffer %s\n", vid_priv->vidconsole_drv_name);
+		printf("boot_args->video_information.base_addr: 0x%p\n",     boot_args->video_information.base_addr);
+		printf("boot_args->video_information.display: %d\n",         boot_args->video_information.display);
+		printf("boot_args->video_information.bytes_per_row: %d\n",     boot_args->video_information.bytes_per_row);
+		printf("boot_args->video_information.width: %d\n",             boot_args->video_information.width);
+		printf("boot_args->video_information.height: %d\n",         boot_args->video_information.height);
+		printf("boot_args->video_information.depth: %d\n",             boot_args->video_information.depth);
+	}
+
 	// Append the Apple flattened device tree
 	boot_args->afdt = boot_args->phys_end;
 	boot_args->afdt_length = afdt_length(fdt_image_addr);
