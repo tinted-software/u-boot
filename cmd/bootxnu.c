@@ -9,6 +9,9 @@
 #include <env.h>
 #include <asm/system.h>
 #include <command.h>
+#include <dm/uclass.h>
+#include <dm/device.h>
+#include <video.h>
 
 #define XNU_LOAD_OFFSET  0x4000
 #define XNU_LOAD_ADDR CONFIG_SYS_LOAD_ADDR + XNU_LOAD_OFFSET
@@ -147,7 +150,7 @@ int do_bootxnu(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 	}
 
 	if (vid_priv) {
-		boot_args->video_information.base_addr = vid_priv->fb;
+		boot_args->video_information.base_addr = (u64)(uintptr_t)vid_priv->fb;
 		boot_args->video_information.display = 0;
 		boot_args->video_information.bytes_per_row = (vid_priv->fb_size) / vid_priv->ysize;
 		boot_args->video_information.width = vid_priv->xsize;
@@ -155,12 +158,12 @@ int do_bootxnu(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 		boot_args->video_information.depth = (1 << vid_priv->bpix);
 
 		printf("## Using framebuffer %s\n", vid_priv->vidconsole_drv_name);
-		printf("boot_args->video_information.base_addr: 0x%p\n",     boot_args->video_information.base_addr);
-		printf("boot_args->video_information.display: %d\n",         boot_args->video_information.display);
-		printf("boot_args->video_information.bytes_per_row: %d\n",     boot_args->video_information.bytes_per_row);
-		printf("boot_args->video_information.width: %d\n",             boot_args->video_information.width);
-		printf("boot_args->video_information.height: %d\n",         boot_args->video_information.height);
-		printf("boot_args->video_information.depth: %d\n",             boot_args->video_information.depth);
+		printf("boot_args->video_information.base_addr: %lld\n",     boot_args->video_information.base_addr);
+		printf("boot_args->video_information.display: %lld\n",         boot_args->video_information.display);
+		printf("boot_args->video_information.bytes_per_row: %lld\n",     boot_args->video_information.bytes_per_row);
+		printf("boot_args->video_information.width: %lld\n",             boot_args->video_information.width);
+		printf("boot_args->video_information.height: %lld\n",         boot_args->video_information.height);
+		printf("boot_args->video_information.depth: %lld\n",             boot_args->video_information.depth);
 	}
 
 	// Append the Apple flattened device tree
