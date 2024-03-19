@@ -151,19 +151,11 @@ int do_bootxnu(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 
 	if (vid_priv) {
 		boot_args->video_information.base_addr = (u64)(uintptr_t)vid_priv->fb;
-		boot_args->video_information.display = 0;
-		boot_args->video_information.bytes_per_row = (vid_priv->fb_size) / vid_priv->ysize;
+		boot_args->video_information.display = 1;
+		boot_args->video_information.bytes_per_row = ( (1 << vid_priv->bpix) * (vid_priv->xsize) ) / 8;
 		boot_args->video_information.width = vid_priv->xsize;
 		boot_args->video_information.height = vid_priv->ysize;
 		boot_args->video_information.depth = (1 << vid_priv->bpix);
-
-		printf("## Using framebuffer %s\n", vid_priv->vidconsole_drv_name);
-		printf("boot_args->video_information.base_addr: %lld\n",     boot_args->video_information.base_addr);
-		printf("boot_args->video_information.display: %lld\n",         boot_args->video_information.display);
-		printf("boot_args->video_information.bytes_per_row: %lld\n",     boot_args->video_information.bytes_per_row);
-		printf("boot_args->video_information.width: %lld\n",             boot_args->video_information.width);
-		printf("boot_args->video_information.height: %lld\n",         boot_args->video_information.height);
-		printf("boot_args->video_information.depth: %lld\n",             boot_args->video_information.depth);
 	}
 
 	// Append the Apple flattened device tree
