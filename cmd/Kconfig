@@ -423,6 +423,7 @@ config CMD_ELF
 
 config CMD_BOOTXNU
 	bool "bootxnu"
+	default y
 	help
 	  XNU image loading support. Allows one to load a Mach-O executable
 	  stored into memory along with an Apple Flattened Device Tree.
