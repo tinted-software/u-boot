@@ -538,6 +538,13 @@ config CMD_ELF_FDT_SETUP
 	  allows to bring additional system info (e.g. /memory node) to
 	  the Operating System or application.
 
+config CMD_BOOTXNU
+	bool "bootxnu"
+	default y
+	help
+	  XNU image loading support. Allows one to load a Mach-O executable
+	  stored into memory along with an Apple Flattened Device Tree.
+
 config CMD_FDT
 	bool "Flattened Device Tree utility commands"
 	default y
