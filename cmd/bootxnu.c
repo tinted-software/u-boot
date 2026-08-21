@@ -1,11 +1,13 @@
-#include <common.h>
 #include <cpu_func.h>
+#include <asm/global_data.h>
 #include <env.h>
 #include <command.h>
 #include <dm/uclass.h>
 #include <dm/device.h>
 #include <video.h>
 #include <stdint.h>
+
+DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_ARM64
 	#include <asm/system.h>
@@ -215,7 +217,7 @@ int do_bootxnu(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 	boot_args->version = 2;
 	boot_args->virt_base = load_info.base;
 	boot_args->phys_base = XNU_LOAD_ADDR;
-	boot_args->mem_size = CONFIG_SYS_SDRAM_SIZE;
+	boot_args->mem_size = gd->ram_size;
 	boot_args->phys_end = (uintptr_t)(boot_args + 1);
 	command_line = env_get("bootargs");
 	if (command_line)
