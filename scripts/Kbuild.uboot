@@ -24,7 +24,7 @@ echo-cmd = $(if $($(quiet)cmd_$(1)),\
 
 # cc-name
 # Expands to either gcc or clang
-cc-name = $(shell $(CC) -v 2>&1 | grep -q "clang version" && echo clang || echo gcc)
+cc-name = $(shell $(CC) --version 2>&1 | grep -q "clang" && echo clang || echo gcc)
 
 # cc-version
 cc-version = $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-version.sh $(CC))
