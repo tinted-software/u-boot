@@ -1,13 +1,13 @@
-/* SPDX-License-Identifier: GPL-2.0+ */
+// SPDX-License-Identifier: GPL-2.0-only
 /*
- * This header provides common constants for PCI bindings.
+ * PCIe biding header provides constants for gs101 SoC
+ *
+ * Copyright (C) 2020 Samsung Electronics Co., Ltd.
+ *              http://www.samsung.com
  */
 
-#ifndef _DT_BINDINGS_PCI_PCI_H
-#define _DT_BINDINGS_PCI_PCI_H
-
-/* Encode a vendor and device ID into a single cell */
-#define PCI_VENDEV(v, d)	(((v) << 16) | (d))
+#ifndef _DT_BINDINGS_EXYNOS_PCI_H
+#define _DT_BINDINGS_EXYNOS_PCI_H
 
 #define true		1
 #define false		0
@@ -28,4 +28,4 @@
 #define LINK_SPEED_GEN2		2
 #define LINK_SPEED_GEN3		3
 
-#endif /* _DT_BINDINGS_PCI_PCI_H */
+#endif

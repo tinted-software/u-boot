@@ -260,6 +260,16 @@ config TARGET_EXYNOS_MOBILE
 	select LINUX_KERNEL_IMAGE_HEADER
 	select OF_CONTROL
 
+config TARGET_GOOGLE_LYNX
+	bool "Google Pixel 7a (Lynx - Tensor GS201)"
+	select ARM64
+	select BOARD_EARLY_INIT_F
+	select LINUX_KERNEL_IMAGE_HEADER
+	select OF_CONTROL
+	help
+	  Support for Google Pixel 7a (Lynx) powered by Google Tensor G2
+	  (GS201) SoC. Designed for chainloading via fastboot (Android boot image).
+
 config SYS_SOC
 	default "exynos"
 
@@ -286,5 +296,6 @@ source "board/samsung/espresso7420/Kconfig"
 source "board/samsung/axy17lte/Kconfig"
 source "board/samsung/e850-96/Kconfig"
 source "board/samsung/exynos-mobile/Kconfig"
+source "board/google/lynx/Kconfig"
 
 endif

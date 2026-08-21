@@ -1,0 +1,8 @@
+GOOGLE PIXEL 7A (LYNX) BOARD
+M:	Theo <theo@example.com>
+S:	Maintained
+F:	board/google/lynx/
+F:	include/configs/google_lynx.h
+F:	configs/google_lynx_defconfig
+F:	dts/upstream/src/arm64/google/gs201-lynx*
+F:	dts/upstream/src/arm64/google/gs201/
