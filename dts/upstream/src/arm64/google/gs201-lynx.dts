@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Google Pixel 7a (Lynx) Device Tree Source
+ *
+ * Copyright 2022-2024 Google LLC
+ */
+
+/dts-v1/;
+
+#include "gs201/gs201-b0.dts"
+#include "gs201-lynx-common.dtsi"
+#include "gs201-lynx-touch.dtsi"
+
+/ {
+	model = "Google Pixel 7a (Lynx)";
+	compatible = "google,lynx", "google,GS201 LYNX", "google,gs201", "google,GS201";
+
+	board_id = <0x30506>;
+	board_rev = <0x10000>;
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&serial_0 {
+	status = "okay";
+};
