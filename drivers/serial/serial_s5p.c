@@ -259,6 +259,8 @@ static const struct udevice_id s5p_serial_ids[] = {
 	{ .compatible = "samsung,exynos4210-uart",	.data = PORT_S5P },
 	{ .compatible = "samsung,exynos850-uart",	.data = PORT_S5P },
 	{ .compatible = "samsung,exynos8895-uart",	.data = PORT_S5P },
+	{ .compatible = "samsung,exynos-uart",		.data = PORT_S5P },
+	{ .compatible = "google,gs201-uart",		.data = PORT_S5P },
 	{ .compatible = "apple,s5l-uart",		.data = PORT_S5L },
 	{ }
 };
