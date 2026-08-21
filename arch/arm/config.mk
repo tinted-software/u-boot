@@ -29,6 +29,21 @@ ifeq ($(CONFIG_ARM64),y)
 PLATFORM_RELFLAGS += $(call cc-option,-mgeneral-regs-only)
 endif
 
+ifeq ($(CONFIG_ARM64),y)
+CLANG_TARGET_FLAGS := aarch64-linux-gnu
+else
+CLANG_TARGET_FLAGS := arm-linux-gnueabi
+endif
+
+ifneq ($(shell $(CC) --version 2>&1 | head -n 1 | grep clang),)
+ifeq ($(CROSS_COMPILE),)
+CLANG_FLAGS += --target=$(CLANG_TARGET_FLAGS)
+KBUILD_CFLAGS += --target=$(CLANG_TARGET_FLAGS)
+KBUILD_CPPFLAGS += --target=$(CLANG_TARGET_FLAGS)
+KBUILD_AFLAGS += --target=$(CLANG_TARGET_FLAGS)
+endif
+endif
+
 # LLVM support
 LLVM_RELFLAGS		:= $(call cc-option,-mllvm,)
 PLATFORM_CPPFLAGS += -D__ARM__
