@@ -73,7 +73,7 @@ struct thread_command {
 	} state;
 };
 
-#define XNU_CMDLINE_LEN 608
+#define XNU_CMDLINE_LEN 1024
 
 struct xnu_boot_arguments {
 	u16 revision;
@@ -217,7 +217,18 @@ int do_bootxnu(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 	boot_args->version = 2;
 	boot_args->virt_base = load_info.base;
 	boot_args->phys_base = XNU_LOAD_ADDR;
-	boot_args->mem_size = gd->ram_size;
+	/*
+	 * mem_size is what XNU hands the allocator. On QEMU the panic log
+	 * lives in the last 512K of DRAM (chosen/pram in the AFDT), so it
+	 * must be excluded here. chosen/dram-size in the AFDT is the full
+	 * bank and is what is_dram_addr() uses.
+	 */
+#ifdef CONFIG_ARCH_QEMU
+	if (gd->ram_size > 0x80000)
+		boot_args->mem_size = gd->ram_size - 0x80000;
+	else
+#endif
+		boot_args->mem_size = gd->ram_size;
 	boot_args->phys_end = (uintptr_t)(boot_args + 1);
 	command_line = env_get("bootargs");
 	if (command_line)
@@ -239,11 +250,24 @@ int do_bootxnu(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 		boot_args->video_information.depth = (1 << vid_priv->bpix);
 	}
 
-	boot_args->afdt = boot_args->phys_end;
-	boot_args->afdt_length = afdt_length(fdt_image_addr);
-	memcpy((void *)boot_args->afdt, fdt_image_addr, boot_args->afdt_length);
-	boot_args->phys_end += boot_args->afdt_length;
-	boot_args->phys_end = roundup(boot_args->phys_end, 0x10000);
+	{
+		uintptr_t afdt_phys = boot_args->phys_end;
+
+		boot_args->afdt_length = afdt_length(fdt_image_addr);
+		memcpy((void *)afdt_phys, fdt_image_addr, boot_args->afdt_length);
+		/*
+		 * XNU's boot_args.deviceTreeP is a kernel virtual address,
+		 * not the physical copy sitting after the Mach-O.
+		 */
+		boot_args->afdt = afdt_phys - XNU_LOAD_ADDR + load_info.base;
+		boot_args->phys_end = roundup(afdt_phys + boot_args->afdt_length,
+					      0x10000);
+	}
+
+	printf("bootxnu: entry=%p boot_args=%p phys_base=0x%llx virt_base=0x%llx\n",
+	       xnu_entry, boot_args,
+	       (unsigned long long)boot_args->phys_base,
+	       (unsigned long long)boot_args->virt_base);
 
 	dcache_disable();
 #ifdef CONFIG_ARM64
