@@ -21,6 +21,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define LOAD_COMMAND_SEGMENT    0x1
 #endif
 #define LOAD_COMMAND_UNIXTHREAD 0x5
+#define LOAD_COMMAND_MAIN       0x80000028
 #define MACH_O_EXEC             0x2
 
 struct mach_o_header {
@@ -52,6 +53,12 @@ struct mach_o_segment_command {
 	u32 initial_protection;
 	u32 sections_nb;
 	u32 flags;
+};
+
+struct entry_point_command {
+	struct mach_o_load_command load_command;
+	uint64_t entryoff;
+	uint64_t stacksize;
 };
 
 struct thread_command {
@@ -159,6 +166,10 @@ static struct mach_o_load_info load_mach_o_image(void *mach_o_image)
 		if (lc->command == LOAD_COMMAND_SEGMENT) {
 			sc = (struct mach_o_segment_command *)lc;
 
+			if (strncmp(sc->segment_name, "__PAGEZERO", 10) == 0 && sc->src_len == 0) {
+				lc = ((void *)lc) + lc->command_size;
+				continue;
+			}
 			ret.end  = max_t(uintptr_t,
 					 sc->dst + sc->dst_len, ret.end);
 			ret.base = min_t(uintptr_t, sc->dst, ret.base);
@@ -171,6 +182,10 @@ static struct mach_o_load_info load_mach_o_image(void *mach_o_image)
 		if (lc->command == LOAD_COMMAND_SEGMENT) {
 			sc = (struct mach_o_segment_command *)lc;
 
+			if (strncmp(sc->segment_name, "__PAGEZERO", 10) == 0 && sc->src_len == 0) {
+				lc = ((void *)lc) + lc->command_size;
+				continue;
+			}
 			dst = (void *)(sc->dst - ret.base + XNU_LOAD_ADDR);
 			src = (void *)mach_o_image + sc->src_offset;
 
@@ -181,6 +196,9 @@ static struct mach_o_load_info load_mach_o_image(void *mach_o_image)
 				       sc->dst_len - sc->src_len);
 		} else if (lc->command == LOAD_COMMAND_UNIXTHREAD) {
 			ret.entry = ((struct thread_command *)lc)->state.pc;
+		} else if (lc->command == LOAD_COMMAND_MAIN) {
+			struct entry_point_command *ep = (struct entry_point_command *)lc;
+			ret.entry = ret.base + ep->entryoff;
 		}
 		lc = ((void *)lc) + lc->command_size;
 	}
