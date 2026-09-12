@@ -189,6 +189,12 @@ int fetch_baud_from_dtb(void)
 /* Called prior to relocation */
 int serial_init(void)
 {
+#if CONFIG_IS_ENABLED(TARGET_GOOGLE_LYNX)
+	/* ABL's handoff DT is not safe for pre-relocation serial probing. */
+	if (!(gd->flags & GD_FLG_RELOC))
+		return 0;
+#endif
+
 #if CONFIG_IS_ENABLED(SERIAL_PRESENT)
 	/*
 	 * Skip serial device probe before relocation if debug UART is enabled
@@ -231,6 +237,10 @@ int serial_init(void)
 /* Called after relocation */
 int serial_initialize(void)
 {
+#if CONFIG_IS_ENABLED(TARGET_GOOGLE_LYNX)
+	/* ABL's handoff DT cannot safely probe the UART at either stage. */
+	return 0;
+#endif
 	/* Scanning uclass to probe devices */
 	if (IS_ENABLED(CONFIG_SERIAL_PROBE_ALL)) {
 		int ret;

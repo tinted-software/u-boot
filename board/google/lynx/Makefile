@@ -4,3 +4,4 @@
 #
 
 obj-y	+= lynx.o
+obj-y	+= lowlevel_init.o
