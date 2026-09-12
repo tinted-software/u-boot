@@ -18,4 +18,12 @@ config EXYNOS_MIPI_DSIM
 	bool "Exynos MIPI DSI support"
 	depends on EXYNOS_FB
 
+config EXYNOS_GS201_DECON
+	bool "Google Tensor GS201 DECON/DPU display"
+	help
+	  Adopt the RDMA/DPU plane left running by the ABL bootloader on
+	  Google Tensor GS201 (Pixel 7a / lynx), force a linear scanout
+	  buffer and expose it as a U-Boot video console. The MIPI-DSIM
+	  and panel are left untouched and keep running from ABL.
+
 endif

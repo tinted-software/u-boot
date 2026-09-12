@@ -14,13 +14,13 @@
 #include <asm/system.h>
 #include <asm/armv8/mmu.h>
 
-static ulong reg0 __section(".data");
+ulong reg0 __section(".data");
 
 /**
  * Save x0 register value, assuming previous bootloader set it to
  * point on loaded fdt or (for older linux kernels)atags.
  */
-void save_boot_params(ulong r0)
+void __weak save_boot_params(ulong r0)
 {
 	reg0 = r0;
 	save_boot_params_ret();

@@ -67,6 +67,9 @@ enum video_format {
 	VIDEO_X8B8G8R8,
 	VIDEO_X8R8G8B8,
 	VIDEO_X2R10G10B10,
+	/* Word B8G8R8X8, i.e. bytes in memory X,R,G,B (Samsung BGRX /
+	 * Exynos IDMA XRGB8888). */
+	VIDEO_BGRX8888,
 };
 
 /**
