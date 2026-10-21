@@ -23,6 +23,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define LOAD_COMMAND_UNIXTHREAD 0x5
 #define LOAD_COMMAND_MAIN       0x80000028
 #define MACH_O_EXEC             0x2
+#define MACH_O_FILESET          0xc
 
 struct mach_o_header {
 	u32 magic;
@@ -118,8 +119,14 @@ struct afdt_property {
 	u32 length;
 };
 
-#define XNU_LOAD_OFFSET  0x4000
-#define XNU_LOAD_ADDR CONFIG_SYS_LOAD_ADDR + XNU_LOAD_OFFSET
+/*
+ * The kernel maps itself with 32M L2 blocks (16K granule) as
+ * round_down(phys_base, 32M) + (VA mod 32M), so the image must be loaded
+ * at a physical address congruent to its link VA modulo 32M. The VMApple
+ * kernelcache links at 0xfffffe0007004000, i.e. 0x1004000 mod 32M.
+ */
+#define XNU_LOAD_OFFSET  0xe04000	/* SYS_LOAD_ADDR 0x40200000 -> 0x41004000 */
+#define XNU_LOAD_ADDR (CONFIG_SYS_LOAD_ADDR + XNU_LOAD_OFFSET)
 
 u32 afdt_length(void *afdt)
 {
@@ -130,7 +137,7 @@ u32 afdt_length(void *afdt)
 	for (i = 0; i < node->properties_nb; ++i) {
 		struct afdt_property *property = (afdt + offset);
 
-		offset += sizeof(*property) + roundup(property->length, 4);
+		offset += sizeof(*property) + roundup(property->length & 0x7fffffff, 4);
 	}
 
 	for (i = 0; i < node->children_nb; ++i)
@@ -158,7 +165,12 @@ static struct mach_o_load_info load_mach_o_image(void *mach_o_image)
 	ret.base = ~0;
 
 	header = mach_o_image;
-	if (header->magic != MACH_O_MAGIC || header->file_type != MACH_O_EXEC)
+	/*
+	 * kernelcache is MH_FILESET: the top-level segments cover every
+	 * kext, and the LC_UNIXTHREAD/LC_MAIN entry is the kernel's.
+	 */
+	if (header->magic != MACH_O_MAGIC ||
+	    (header->file_type != MACH_O_EXEC && header->file_type != MACH_O_FILESET))
 		return ret;
 
 	lc = (struct mach_o_load_command *)(header + 1);
