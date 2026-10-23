@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * U-Boot overlay for Spotify Car Thing -- shares the standard G12A
+ * adjustments (bootph-all on soc, vpu register fixups, etc.).
+ */
+
+#include "meson-g12-common-u-boot.dtsi"
+
+/*
+ * The upstream DT references CLKID_MIPI_DSI_PXCLK_SEL / _CTS_ENCL_SEL /
+ * _VCLK2_SEL etc. via `clocks` / `assigned-clocks` on mipi_dsi. u-boot's
+ * drivers/clk/meson/g12a.c doesn't implement those gates, so the generic
+ * clk_set_defaults() invoked by device_probe() before drv->probe() ends
+ * up returning -ENOENT and our wrapper never gets to run.
+ *
+ * Drop the clock references entirely for u-boot — the wrapper writes the
+ * HHI registers directly (see meson_dw_mipi_dsi.c clock setup notes), so
+ * the framework-managed clocks aren't load-bearing here.
+ */
+&mipi_dsi {
+	/delete-property/ clocks;
+	/delete-property/ clock-names;
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+};
+
+/*
+ * Upstream DT names the EE PWM controllers `amlogic,meson-g12-pwm-v2` which
+ * the u-boot pwm-meson driver doesn't know. Add the legacy compat so the
+ * driver binds. The HW programming model is the same for our use case.
+ */
+&pwm_ef {
+	compatible = "amlogic,meson-g12a-ee-pwm";
+};
+&pwm_cd {
+	compatible = "amlogic,meson-g12a-ee-pwm";
+};
+&pwm_ab {
+	compatible = "amlogic,meson-g12a-ee-pwm";
+};
+
+/*
+ * Do not offer DDR52 to the mmc core.
+ *
+ * The eMMC parts fitted to this board are not interchangeable at DDR52
+ * under this driver. Measured with a 16 MiB sustained read:
+ *
+ *            Samsung S40004      Kioxia 004GA0
+ *   HS 26M   23.4 MB/s           23.4 MB/s
+ *   HS52     38.5 MB/s           45.4 MB/s
+ *   DDR52    42.4 MB/s           mode switch fails -> falls back
+ *
+ * On the Kioxia part the DDR52 switch does not complete, and u-boot's
+ * mmc core silently drops to legacy (22.9 MB/s) and reports success.
+ * Units where that switch half-succeeds instead get no fallback: small
+ * reads work, a kernel-sized read does not, and the board bootloops
+ * before handoff while looking healthy to `mmc rescan`.
+ *
+ * HS52 is single-data-rate, works on both parts, and is *faster* than
+ * DDR52 on Kioxia and within 9% of it on Samsung — so removing DDR52
+ * costs essentially nothing and removes the failure mode. The driver
+ * already strips HS200/HS400 (no tuning support) and caps f_max at
+ * 52 MHz, so with mmc-ddr-1_8v gone the best remaining mode is HS52.
+ *
+ * Deleting the DT property rather than masking caps in code keeps this
+ * where the rest of the bus configuration lives, and re-enabling it for
+ * an experiment is a one-line revert.
+ */
+&sd_emmc_c {
+	/delete-property/ mmc-ddr-1_8v;
+};

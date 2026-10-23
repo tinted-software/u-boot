@@ -7,7 +7,7 @@ CONFIG_ENV_SIZE=0x40000
 CONFIG_ENV_SECT_SIZE=0x40000
 CONFIG_DEFAULT_DEVICE_TREE="qemu-arm64"
 CONFIG_OF_LIBFDT_OVERLAY=y
-CONFIG_SYS_LOAD_ADDR=0x40200000
+CONFIG_SYS_LOAD_ADDR=0x40000000
 CONFIG_DEBUG_UART_BASE=0x9000000
 CONFIG_DEBUG_UART_CLOCK=0
 CONFIG_ARMV8_CRYPTO=y
@@ -81,4 +81,5 @@ CONFIG_UTHREAD=y
 CONFIG_UNIT_TEST=y
 CONFIG_CMD_BOOTXNU=y
 CONFIG_BOOTDELAY=1
-CONFIG_BOOTCOMMAND="setenv bootargs 'rd=md0 -v serial=3 debug=0x14e keepsyms=1'; bootxnu 0x44000000 0x46000000"
+CONFIG_BOOTCOMMAND="setenv bootargs 'serial=3 serial-device-name=uart0 debug=0xa -v -noprogress fips_mode=4 amfi_allow_any_signature=1 kdp_match_name=none kextlog=0xffffffff'; bootxnu 0x44000000"
+# CONFIG_VIDEO_LOGO is not set
