@@ -378,7 +378,15 @@ static struct mach_o_load_info load_mach_o_image(void *mach_o_image)
 		if (lc->command == LOAD_COMMAND_SEGMENT) {
 			sc = (struct mach_o_segment_command *)lc;
 
-			if (strncmp(sc->segment_name, "__PAGEZERO", 10) == 0 && sc->src_len == 0) {
+			/*
+			 * Skip __PAGEZERO and any empty segment: XNU keeps
+			 * zero-sized placeholders (__PRELINK_TEXT lives at
+			 * 0xfffffff004004000, below __TEXT) that would
+			 * otherwise become the image base and corrupt the
+			 * segment destination addresses.
+			 */
+			if (sc->dst_len == 0 ||
+			    (strncmp(sc->segment_name, "__PAGEZERO", 10) == 0 && sc->src_len == 0)) {
 				lc = ((void *)lc) + lc->command_size;
 				continue;
 			}
@@ -394,7 +402,8 @@ static struct mach_o_load_info load_mach_o_image(void *mach_o_image)
 		if (lc->command == LOAD_COMMAND_SEGMENT) {
 			sc = (struct mach_o_segment_command *)lc;
 
-			if (strncmp(sc->segment_name, "__PAGEZERO", 10) == 0 && sc->src_len == 0) {
+			if (sc->dst_len == 0 ||
+			    (strncmp(sc->segment_name, "__PAGEZERO", 10) == 0 && sc->src_len == 0)) {
 				lc = ((void *)lc) + lc->command_size;
 				continue;
 			}
