@@ -125,7 +125,13 @@ struct afdt_property {
  * at a physical address congruent to its link VA modulo 32M. The VMApple
  * kernelcache links at 0xfffffe0007004000, i.e. 0x1004000 mod 32M.
  */
-#define XNU_LOAD_OFFSET  0xe04000	/* SYS_LOAD_ADDR 0x40200000 -> 0x41004000 */
+/*
+ * With a kernelcache (MH_FILESET) the image base is the collection header,
+ * which link_cache places at a 32M-aligned address with the kernel at +0x8000;
+ * loading the collection at 0x40000000 puts the kernel at 0x40008000, congruent
+ * to its link address 0xfffffff004008000 modulo 32M.
+ */
+#define XNU_LOAD_OFFSET  0x0
 #define XNU_LOAD_ADDR (CONFIG_SYS_LOAD_ADDR + XNU_LOAD_OFFSET)
 
 u32 afdt_length(void *afdt)
