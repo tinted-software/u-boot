@@ -81,5 +81,5 @@ CONFIG_UTHREAD=y
 CONFIG_UNIT_TEST=y
 CONFIG_CMD_BOOTXNU=y
 CONFIG_BOOTDELAY=1
-CONFIG_BOOTCOMMAND="setenv bootargs 'serial=3 serial-device-name=uart0 debug=0xa -v -noprogress fips_mode=8 amfi_allow_any_signature=1 kdp_match_name=none'; bootxnu 0x44000000"
+CONFIG_BOOTCOMMAND="setenv bootargs 'serial=3 serial-device-name=uart0 debug=0xa -v -noprogress fips_mode=4 amfi_allow_any_signature=1 kdp_match_name=none kextlog=0xffffffff'; bootxnu 0x44000000"
 # CONFIG_VIDEO_LOGO is not set
